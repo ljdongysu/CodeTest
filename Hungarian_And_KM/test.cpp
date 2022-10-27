@@ -4,7 +4,7 @@
 // https://blog.csdn.net/dark_scope/article/details/8880547
 //
 
-//#include<bits/stdc++.h>
+#include<bits/stdc++.h>
 #include <iostream>
 #include <vector>
 #include <cstring>
@@ -26,6 +26,50 @@ bool BoxObjectMatch(const int i, std::vector<int > &indexes, bool visited[], con
     return false; //循环结束，仍未找到匹配，返回匹配失败
 }
 
+void ExchangeBigIOU(const std::vector<std::vector<float>> &iouMap, std::vector<int> &indexes)
+{
+    const int boxSize = iouMap.size();
+    const int objectSize = iouMap[0].size();
+
+    for (int i = 0; i < indexes.size(); ++i)
+    {
+        if (indexes[i] == -1)
+        {
+            for (int j = 0; j < boxSize; ++j)
+            {
+                auto iter = std::find(indexes.begin(), indexes.end(), j);
+                if (iter != indexes.end())
+                {
+                    auto index = std::distance(std::begin(indexes), iter);
+                    if (iouMap[j][index] < iouMap[j][i])
+                    {
+                        indexes[index] = -1;
+                        indexes[i] = j;
+                    }
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < boxSize; ++i)
+    {
+        auto iter = std::find(indexes.begin(), indexes.end(), i);
+        if (iter == indexes.end())
+        {
+            for (int j = 0; j < objectSize; ++j)
+            {
+                if (indexes[j] >=0)
+                {
+                    if (iouMap[indexes[j]][j] < iouMap[i][j])
+                    {
+                        indexes[j] = i;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Hungarian(const std::vector<std::vector<float>> &iouMap, std::vector<int> &indexes)
 {
     const int boxSize = iouMap.size();
@@ -36,14 +80,13 @@ void Hungarian(const std::vector<std::vector<float>> &iouMap, std::vector<int> &
         {
             indexes.resize(objectSize, -1);
             bool visited[objectSize];
-            indexes[0] = 1;
-            indexes[1] = 0;
 
             for (int i = 0; i < boxSize; ++i)
             {
                 memset(&visited[0], false, iouMap[0].size() * sizeof(visited[0]));
                 BoxObjectMatch(i, indexes, visited, iouMap);
             }
+            ExchangeBigIOU(iouMap, indexes);
         }
     }
 }
@@ -52,8 +95,8 @@ int main()
     std::vector<std::vector<float>> iouMap;
     std::vector<int> indexes;
 
-    iouMap.push_back({0, 0, 0});
-    iouMap.push_back({0.9, 0.5, 0});
+    iouMap.push_back({0.1, 0.2, 0.3});
+    iouMap.push_back({0.3, 0, 0});
     iouMap.push_back({0.2, 0, 0});
 //    iouMap.push_back({0.5});
 //    iouMap.push_back({0.7});
