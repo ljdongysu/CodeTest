@@ -66,31 +66,42 @@
 #include <iostream>
 #include <vector>
 
-std::vector<int> queenPlace[8] = { 8 };  //全局变量，下标表示行，值表示queen存储在那一列
 int count = 0;  //计数器
-std::vector<std::vector<float>> iouMap;
-std::vector<std::vector<int>> indexMap;
-void printQueen() {  //打印一个二维数组
-    for (int i = 0; i < 8; ++i) {
-        for (int j = 0; j < 8; ++j) {
-            if (queenPlace[i] == j) {
-                printf("Q ");
-            } else {
-                printf("* ");
-            }
-        }
-        std::cout << std::endl;
-    }
+void printQueen(const std::vector<int> &queenPlace, const std::vector<std::vector<float>> &iouMap)
+{
     std::cout << "----count:" << ++count << "-----" << std::endl;
 
-    for (int i = 0; i < 8; ++i)
+    static int bindsNumbers = 0;
+    static float finalIouSum = 0;
+    static std::vector<int> finalQueues;
+    int currentNumbers = 0;
+    float currentIouSum = 0;
+    for (int i = 0; i < queenPlace.size(); ++i)
     {
         std::cout << queenPlace[i] <<", ";
+        if (queenPlace[i] >=0)
+        {
+            currentNumbers++;
+            currentIouSum += iouMap[i][queenPlace[i]];
+        }
     }
-    std::cout<< std::endl;
+    if (currentNumbers > bindsNumbers || (currentNumbers == bindsNumbers && currentIouSum > finalIouSum))
+    {
+        finalQueues = queenPlace;
+        finalIouSum = currentIouSum;
+        bindsNumbers = currentNumbers;
+    }
+    std::cout<< "currentIouSum: " << currentIouSum << std::endl;
+
+    for (int i = 0 ;i < finalQueues.size(); ++i)
+    {
+        std::cout << finalQueues[i] << " , ";
+    }
+    std::cout << "\n" << "finalIouSum: " << finalIouSum << std::endl;
+
 }
 
-bool isOk(int row, int col, std::vector<std::vector<int>> &indexMap, std::vector<int> &queenPlace)
+bool isOk(int row, int col, const std::vector<std::vector<int>> &indexMap, std::vector<int> &queenPlace)
 {  //判断row行col列放置是否合适
     if (indexMap[row][col] == -1) return true;
     for (int i = row - 1; i >= 0; --i)
@@ -100,33 +111,42 @@ bool isOk(int row, int col, std::vector<std::vector<int>> &indexMap, std::vector
     return true;
 }
 
-void EightQueen(int row, std::vector<std::vector<int>> &indexMap, std::vector<int> &queenPlace) {
+void EightQueen(int row,const std::vector<std::vector<int>> &indexMap
+                ,const std::vector<std::vector<float>> &iouMap, std::vector<int> &queenPlace)
+{
     if (row == indexMap.size())
-    {  //8个皇后都放置好，打印，无法递归返回
-        printQueen();
+    {
+        printQueen(queenPlace,iouMap);
         return;
     }
     for (int col = 0; col < indexMap[row].size(); ++col)
     {  //每一行都有8种方法
-        if (isOk(row, col)) {    //满足要求
+        if (isOk(row, col, indexMap, queenPlace)) {    //满足要求
             queenPlace[row] = indexMap[row][col]; //第row行的皇后放在col列
-            EightQueen(row+1);     //考察下一行
+            EightQueen(row+1, indexMap, iouMap, queenPlace);     //考察下一行
         }
     }
 }
 
 
-int main() {
+int main()
+{
+    std::vector<int> queenPlace;  //全局变量，下标表示行，值表示queen存储在那一列
 
-    iouMap.push_back({0.1,0.2,0});
-    iouMap.push_back({0.1,0.2,0.3,0.4,-1});
-    iouMap.push_back({0.1,0.2,-1});
-    iouMap.push_back({0.3,0.1,-1});
+    std::vector<std::vector<float>> iouMap;
+    std::vector<std::vector<int>> indexMap;
+
+    iouMap.push_back({0.7397604, 0, 0.17528139});
+    iouMap.push_back({0, 0, 0});
+    iouMap.push_back({0, 0, 0});
 //    iouMap.push_back({1,2,-1});
 //    iouMap.push_back({4,1,-1});
 //    iouMap.push_back({2,1,-1});
 //    iouMap.push_back({0,1,0});
-    for (auot map : iouMap)
+
+    queenPlace.resize(iouMap.size(),-1);
+
+    for (auto map : iouMap)
     {
         std::vector<int> index;
         for (int i = 0; i < map.size(); ++i)
@@ -140,10 +160,5 @@ int main() {
         indexMap.push_back(index);
     }
 
-
-
-
-
-
-    EightQueen(0);return 0;
+    EightQueen(0, indexMap, iouMap, queenPlace);return 0;
 }
