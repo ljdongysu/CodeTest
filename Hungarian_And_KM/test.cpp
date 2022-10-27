@@ -36,6 +36,8 @@ void Hungarian(const std::vector<std::vector<float>> &iouMap, std::vector<int> &
         {
             indexes.resize(objectSize, -1);
             bool visited[objectSize];
+            indexes[0] = 1;
+            indexes[1] = 0;
 
             for (int i = 0; i < boxSize; ++i)
             {
@@ -50,9 +52,11 @@ int main()
     std::vector<std::vector<float>> iouMap;
     std::vector<int> indexes;
 
-    iouMap.push_back({0.2, 0.5, 0.7,5});
-    iouMap.push_back({0, 0, 1,5});
-    iouMap.push_back({1, 1, 0,5});
+    iouMap.push_back({0, 0, 0});
+    iouMap.push_back({0.9, 0.5, 0});
+    iouMap.push_back({0.2, 0, 0});
+//    iouMap.push_back({0.5});
+//    iouMap.push_back({0.7});
 
     Hungarian(iouMap,indexes);
     for (int i = 0; i < indexes.size(); ++i)

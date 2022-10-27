@@ -1,7 +1,6 @@
 //
-// KM algorithm
 // Created by donglijian on 10/26/22.
-// https://blog.csdn.net/liuzich/article/details/105933547
+// https://blog.csdn.net/dark_scope/article/details/8880547
 //
 
 #include<bits/stdc++.h>
