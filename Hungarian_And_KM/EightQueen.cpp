@@ -67,8 +67,8 @@
 #include <vector>
 
 int count = 0;  //计数器
-float finalIouSum = 0;
-int finalBindsNumbers = 0;
+float indexesIouSum = 0;
+int indexesBindsNumbers = 0;
 void CompareBinds(const std::vector<int> &queenPlace
                   , const std::vector<std::vector<float>> &iouMap
                   , std::vector<int> &indexes)
@@ -87,11 +87,11 @@ void CompareBinds(const std::vector<int> &queenPlace
             currentIouSum += iouMap[i][queenPlace[i]];
         }
     }
-    if (currentNumbers > finalBindsNumbers || (currentNumbers == finalBindsNumbers && currentIouSum > finalIouSum))
+    if (currentNumbers > indexesBindsNumbers || (currentNumbers == indexesBindsNumbers && currentIouSum > indexesIouSum))
     {
         indexes = queenPlace;
-        finalIouSum = currentIouSum;
-        finalBindsNumbers = currentNumbers;
+        indexesIouSum = currentIouSum;
+        indexesBindsNumbers = currentNumbers;
     }
     std::cout<< "currentIouSum: " << currentIouSum << std::endl;
 
@@ -99,7 +99,7 @@ void CompareBinds(const std::vector<int> &queenPlace
     {
         std::cout << indexes[i] << " , ";
     }
-    std::cout << "\n" << "finalIouSum: " << finalIouSum << std::endl;
+    std::cout << "\n" << "indexesIouSum: " << indexesIouSum << std::endl;
 
 }
 
@@ -140,8 +140,8 @@ void BindByIOUEightQueen(const std::vector<std::vector<float>> &iouMap, std::vec
 
     queenPlace.resize(iouMap.size(),-1);
     indexes.resize(iouMap.size(),-1);
-    finalIouSum = 0;
-    finalBindsNumbers = 0;
+    indexesIouSum = 0;
+    indexesBindsNumbers = 0;
 
     for (auto map : iouMap)
     {
