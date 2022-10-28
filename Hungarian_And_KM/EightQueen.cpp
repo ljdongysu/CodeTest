@@ -67,15 +67,17 @@
 #include <vector>
 
 int count = 0;  //计数器
-void printQueen(const std::vector<int> &queenPlace, const std::vector<std::vector<float>> &iouMap)
+float finalIouSum = 0;
+int finalBindsNumbers = 0;
+void CompareBinds(const std::vector<int> &queenPlace
+                  , const std::vector<std::vector<float>> &iouMap
+                  , std::vector<int> &indexes)
 {
     std::cout << "----count:" << ++count << "-----" << std::endl;
 
-    static int bindsNumbers = 0;
-    static float finalIouSum = 0;
-    static std::vector<int> finalQueues;
     int currentNumbers = 0;
     float currentIouSum = 0;
+
     for (int i = 0; i < queenPlace.size(); ++i)
     {
         std::cout << queenPlace[i] <<", ";
@@ -85,23 +87,24 @@ void printQueen(const std::vector<int> &queenPlace, const std::vector<std::vecto
             currentIouSum += iouMap[i][queenPlace[i]];
         }
     }
-    if (currentNumbers > bindsNumbers || (currentNumbers == bindsNumbers && currentIouSum > finalIouSum))
+    if (currentNumbers > finalBindsNumbers || (currentNumbers == finalBindsNumbers && currentIouSum > finalIouSum))
     {
-        finalQueues = queenPlace;
+        indexes = queenPlace;
         finalIouSum = currentIouSum;
-        bindsNumbers = currentNumbers;
+        finalBindsNumbers = currentNumbers;
     }
     std::cout<< "currentIouSum: " << currentIouSum << std::endl;
 
-    for (int i = 0 ;i < finalQueues.size(); ++i)
+    for (int i = 0 ;i < indexes.size(); ++i)
     {
-        std::cout << finalQueues[i] << " , ";
+        std::cout << indexes[i] << " , ";
     }
     std::cout << "\n" << "finalIouSum: " << finalIouSum << std::endl;
 
 }
 
-bool isOk(int row, int col, const std::vector<std::vector<int>> &indexMap, std::vector<int> &queenPlace)
+bool IsValidCompare(int row, int col, const std::vector<std::vector<int>> &indexMap
+                    , std::vector<int> &queenPlace)
 {  //判断row行col列放置是否合适
     if (indexMap[row][col] == -1) return true;
     for (int i = row - 1; i >= 0; --i)
@@ -112,39 +115,33 @@ bool isOk(int row, int col, const std::vector<std::vector<int>> &indexMap, std::
 }
 
 void EightQueen(int row,const std::vector<std::vector<int>> &indexMap
-                ,const std::vector<std::vector<float>> &iouMap, std::vector<int> &queenPlace)
+                ,const std::vector<std::vector<float>> &iouMap, std::vector<int> &queenPlace
+                , std::vector<int> &indexes)
 {
     if (row == indexMap.size())
     {
-        printQueen(queenPlace,iouMap);
+        CompareBinds(queenPlace,iouMap, indexes);
         return;
     }
     for (int col = 0; col < indexMap[row].size(); ++col)
-    {  //每一行都有8种方法
-        if (isOk(row, col, indexMap, queenPlace)) {    //满足要求
-            queenPlace[row] = indexMap[row][col]; //第row行的皇后放在col列
-            EightQueen(row+1, indexMap, iouMap, queenPlace);     //考察下一行
+    {
+        if (IsValidCompare(row, col, indexMap, queenPlace)) {
+            queenPlace[row] = indexMap[row][col];
+            EightQueen(row+1, indexMap, iouMap, queenPlace, indexes);
         }
     }
 }
 
 
-int main()
+void BindByIOUEightQueen(const std::vector<std::vector<float>> &iouMap, std::vector<int> &indexes)
 {
-    std::vector<int> queenPlace;  //全局变量，下标表示行，值表示queen存储在那一列
-
-    std::vector<std::vector<float>> iouMap;
+    std::vector<int> queenPlace;
     std::vector<std::vector<int>> indexMap;
 
-    iouMap.push_back({0.7397604, 0, 0.17528139});
-    iouMap.push_back({0, 0, 0});
-    iouMap.push_back({0, 0, 0});
-//    iouMap.push_back({1,2,-1});
-//    iouMap.push_back({4,1,-1});
-//    iouMap.push_back({2,1,-1});
-//    iouMap.push_back({0,1,0});
-
     queenPlace.resize(iouMap.size(),-1);
+    indexes.resize(iouMap.size(),-1);
+    finalIouSum = 0;
+    finalBindsNumbers = 0;
 
     for (auto map : iouMap)
     {
@@ -160,5 +157,21 @@ int main()
         indexMap.push_back(index);
     }
 
-    EightQueen(0, indexMap, iouMap, queenPlace);return 0;
+    EightQueen(0, indexMap, iouMap, queenPlace, indexes);
+}
+
+int main()
+{
+    std::vector<std::vector<float>> iouMap;
+    std::vector<int> indexes;
+//    iouMap.push_back({0.7397604, 0.9, 0.17528139});
+//    iouMap.push_back({0, 0, 0});
+//    iouMap.push_back({0, 0, 0});
+    iouMap.push_back({0.0883151, 0, 0.744906});
+    iouMap.push_back({0.73976, 0.9, 0.17528139});
+    iouMap.push_back({0, 0.635212, 0});
+
+
+    BindByIOUEightQueen(iouMap, indexes);
+    return 0;
 }
